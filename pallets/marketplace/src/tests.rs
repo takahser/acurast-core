@@ -186,37 +186,47 @@ fn test_no_match_insufficient_reputation() {
 }
 
 #[test]
-fn test_reputation_update_on_fulfill() {
+fn test_reputation_update_for_1000_consecutive_fulfills() {
     // 1000 is the smallest amount accepted by T::AssetTransactor::lock_asset for the asset used
-    let ad = advertisement(1000, 5);
-    let registration = job_registration_with_reward(script(), 5, 5000, None);
-    let fulfillment = fulfillment_for(&registration);
+    let ad = advertisement(1000, 1000);
 
     ExtBuilder::default().build().execute_with(|| {
         assert_ok!(AcurastMarketplace::advertise(
             Origin::signed(bob_account_id()).into(),
             ad.clone(),
         ));
+        for _i in 0..1000 {
+            let registration = job_registration_with_reward(random_script(), 5, 5000, None);
 
-        assert_ok!(Acurast::register(
-            Origin::signed(alice_account_id()).into(),
-            registration.clone(),
-        ));
+            assert_ok!(Acurast::register(
+                Origin::signed(alice_account_id()).into(),
+                registration.clone(),
+            ));
 
-        assert_ok!(Acurast::fulfill(
-            Origin::signed(bob_account_id()),
-            fulfillment.clone(),
-            MultiAddress::Id(alice_account_id())
-        ));
+            let fulfillment = fulfillment_for(&registration);
+
+            assert_ok!(Acurast::fulfill(
+                Origin::signed(bob_account_id()),
+                fulfillment.clone(),
+                MultiAddress::Id(alice_account_id())
+            ));
+        }
 
         assert_eq!(
-            Some(crate::BetaParams { r: 1_000_000, s: 0 }),
+            Some(crate::BetaParams {
+                r: 24_999_951,
+                s: 0
+            }),
             AcurastMarketplace::stored_reputation(bob_account_id())
         );
 
-        assert_eq!(Some(1), AcurastMarketplace::total_jobs_assigned(0));
+        let asset_id = 0;
 
-        assert_eq!(Some(5000), AcurastMarketplace::avg_job_reward(0));
+        assert_eq!(
+            Some(1000),
+            AcurastMarketplace::total_jobs_assigned(asset_id)
+        );
+        assert_eq!(Some(5000), AcurastMarketplace::avg_job_reward(asset_id));
     });
 }
 
