@@ -31,7 +31,7 @@ pub mod pallet {
         AllowedSourcesUpdate, Fulfillment, JobHooks, JobId, JobRegistrationFor, Script,
     };
     use reputation::reputation::{BetaReputation, ReputationEngine};
-    use sp_runtime::traits::{CheckedAdd, CheckedMul};
+    use sp_runtime::traits::{CheckedAdd, CheckedDiv, CheckedMul, CheckedSub};
     use sp_std::prelude::*;
 
     use crate::payments::{Reward, RewardFor};
@@ -48,13 +48,15 @@ pub mod pallet {
         /// Extra structure to include in the registration of a job.
         type RegistrationExtra: IsType<<Self as pallet_acurast::Config>::RegistrationExtra>
             + Into<JobRequirements<RewardFor<Self>>>;
-        /// The ID for this pallet
+        /// The ID for this palletned.checked_sub(1);
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type AssetId: Parameter + IsType<<RewardFor<Self> as Reward>::AssetId>;
         type AssetAmount: Parameter
             + CheckedMul
+            + CheckedDiv
             + CheckedAdd
+            + CheckedSub
             + From<u128>
             + Into<u128>
             + Default
@@ -407,9 +409,17 @@ pub mod pallet {
             let total_jobs_assigned =
                 <StoredTotalJobsAssigned<T>>::get(&reward_asset).unwrap_or_default();
 
-            let total_rewards = avg_job_reward * total_jobs_assigned;
+            let total_rewards = avg_job_reward
+                .checked_mul(&(total_jobs_assigned - <T as Config>::AssetAmount::from(1))) // NEXT checked_sub?
+                .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
-            let new_avg_job_reward = total_rewards + reward_amount;
+            let new_total_rewards = total_rewards
+                .checked_add(&reward_amount)
+                .ok_or(Error::<T>::RewardCalculationOverflow)?;
+
+            let new_avg_job_reward = new_total_rewards
+                .checked_div(&total_jobs_assigned)
+                .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let beta_params =
                 <StoredReputation<T>>::get(who.clone()).ok_or(Error::<T>::ReputationNotFound)?;
