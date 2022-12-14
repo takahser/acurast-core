@@ -40,7 +40,7 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", default-fea
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.29" }
 
 # reputation
-reputation = { path = "../../reputation" }
+reputation = { path = "./reputation" }
 rand = "0.8.5"
 hex = "0.4.3"
 
