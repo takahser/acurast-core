@@ -48,7 +48,7 @@ pub mod pallet {
         /// Extra structure to include in the registration of a job.
         type RegistrationExtra: IsType<<Self as pallet_acurast::Config>::RegistrationExtra>
             + Into<JobRequirements<RewardFor<Self>>>;
-        /// The ID for this pallet
+        /// The ID for this pallet;
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type AssetId: Parameter + IsType<<RewardFor<Self> as Reward>::AssetId>;
@@ -106,13 +106,12 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn total_jobs_assigned)]
     pub type StoredTotalJobsAssigned<T: Config> =
-        StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, <T as Config>::AssetAmount>;
+        StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, u128>;
 
     /// Average job reward as a map [AssetId] -> AssetAmount>
     #[pallet::storage]
     #[pallet::getter(fn avg_job_reward)]
-    pub type StoredAvgJobReward<T> =
-        StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, <T as Config>::AssetAmount>;
+    pub type StoredAvgJobReward<T> = StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, u128>;
     /// Index with sorted advertisement by reward asset as a map [AssetId] -> Vec<([AccountId], [Price])>
     #[pallet::storage]
     #[pallet::getter(fn stored_ad_index)]
@@ -410,15 +409,15 @@ pub mod pallet {
                 <StoredTotalJobsAssigned<T>>::get(&reward_asset).unwrap_or_default();
 
             let total_rewards = avg_job_reward
-                .checked_mul(&(total_jobs_assigned - <T as Config>::AssetAmount::from(1))) // NEXT checked_sub?
+                .checked_mul(total_jobs_assigned - 1u128) // NEXT checked_sub?
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let new_total_rewards = total_rewards
-                .checked_add(&reward_amount)
+                .checked_add(reward_amount.into())
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let new_avg_job_reward = new_total_rewards
-                .checked_div(&total_jobs_assigned)
+                .checked_div(total_jobs_assigned)
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let beta_params =
@@ -565,7 +564,7 @@ pub mod pallet {
                     }
                     let total_jobs_assigned =
                         <StoredTotalJobsAssigned<T>>::get(&reward_asset).unwrap_or_default();
-                    let new_total_jobs_assigned = total_jobs_assigned + T::AssetAmount::from(1);
+                    let new_total_jobs_assigned = total_jobs_assigned + 1;
 
                     <StoredTotalJobsAssigned<T>>::insert(
                         reward_asset.clone(),
