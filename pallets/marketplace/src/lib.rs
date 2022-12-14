@@ -404,7 +404,7 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::JobRegistrationUnsupportedReward)?
                 .into();
 
-            let avg_job_reward = <StoredAvgJobReward<T>>::get(&reward_asset).unwrap_or_default();
+            let avg_job_reward = <StoredAvgJobReward<T>>::get(&reward_asset).unwrap_or(0);
             let total_jobs_assigned =
                 <StoredTotalJobsAssigned<T>>::get(&reward_asset).unwrap_or_default();
 
