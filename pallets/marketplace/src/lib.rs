@@ -68,11 +68,6 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
-    #[derive(RuntimeDebug, Encode, Decode, TypeInfo, Clone, PartialEq, Default)]
-    pub struct BetaParams<T: From<u128>> {
-        pub r: T,
-        pub s: T,
-    }
     #[pallet::pallet]
     #[pallet::generate_store(pub (super) trait Store)]
     #[pallet::without_storage_info]
