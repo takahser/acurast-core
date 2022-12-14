@@ -108,7 +108,7 @@ pub mod pallet {
     pub type StoredTotalJobsAssigned<T: Config> =
         StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, u128>;
 
-    /// Average job reward as a map [AssetId] -> AssetAmount>
+    /// Average job reward as a map [AssetId] -> AssetAmount
     #[pallet::storage]
     #[pallet::getter(fn avg_job_reward)]
     pub type StoredAvgJobReward<T> = StorageMap<_, Blake2_128Concat, <T as Config>::AssetId, u128>;
