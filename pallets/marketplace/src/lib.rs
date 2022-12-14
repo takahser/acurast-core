@@ -409,7 +409,7 @@ pub mod pallet {
                 <StoredTotalJobsAssigned<T>>::get(&reward_asset).unwrap_or_default();
 
             let total_rewards = avg_job_reward
-                .checked_mul(total_jobs_assigned - 1u128) // NEXT checked_sub?
+                .checked_mul(total_jobs_assigned - 1u128)
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let new_total_rewards = total_rewards
