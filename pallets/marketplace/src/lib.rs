@@ -61,7 +61,7 @@ pub mod pallet {
             + Into<u128>
             + Default
             + Ord
-            + Copy
+            + Clone
             + IsType<<RewardFor<Self> as Reward>::AssetAmount>;
         /// Logic for locking and paying tokens for job execution
         type RewardManager: RewardManager<Self>;
@@ -408,7 +408,7 @@ pub mod pallet {
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let new_total_rewards = total_rewards
-                .checked_add(reward_amount.into())
+                .checked_add(reward_amount.clone().into())
                 .ok_or(Error::<T>::RewardCalculationOverflow)?;
 
             let new_avg_job_reward = new_total_rewards
