@@ -9,7 +9,7 @@ use frame_support::{
     },
     Never, PalletId, Parameter,
 };
-use xcm::prelude::MultiLocation;
+use xcm::prelude::AssetId;
 
 pub trait AssetBarrier<Asset> {
     fn can_use_asset(asset: &Asset) -> bool;
@@ -109,7 +109,7 @@ where
     T: pallet_acurast_assets::Config,
     Asset: Parameter
         + Member
-        + Reward<AssetId = MultiLocation, AssetAmount = <T as pallet_assets::Config>::Balance>,
+        + Reward<AssetId = AssetId, AssetAmount = <T as pallet_assets::Config>::Balance>,
     Barrier: AssetBarrier<Asset>,
     AssetSplit: FeeManager,
 {
